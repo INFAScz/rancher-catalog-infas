@@ -14,9 +14,9 @@ catalog:
       required: true # (Optional) Whether or not an answer is required. By default, it's considered `false`.
       type: string # How the questions are formatted and types of response expected
     - variable: ENV_VER # A single word that is used to pair the question and answer.
-      label: Project environment (public/stable/develop) # The "question" to be answered.
+      label: Deploy as # The "question" to be answered.
       description: |
-        Project deploy version
+        Project deploy version (public/stable/develop)
       # The description of the question to show the user how to answer the question.
       default: public # (Optional) A default value that will be pre-populated into the UI
       required: true # (Optional) Whether or not an answer is required. By default, it's considered `false`.
@@ -28,7 +28,7 @@ catalog:
         - develop/zradicka
         - develop/najman
     - variable: GIT_SERVER # A single word that is used to pair the question and answer.
-      label: Project git server # The "question" to be answered.
+      label: Git server # The "question" to be answered.
       description: |
         Where is project repository
       # The description of the question to show the user how to answer the question.
@@ -36,19 +36,27 @@ catalog:
       required: true # (Optional) Whether or not an answer is required. By default, it's considered `false`.
       type: string # How the questions are formatted and types of response expected
     - variable: GIT_REPO # A single word that is used to pair the question and answer.
-      label: Project git repo # The "question" to be answered.
+      label: Git repository # The "question" to be answered.
       description: |
-        Project repository
+        Repository
       # The description of the question to show the user how to answer the question.
       default: infas/24print_v3 # (Optional) A default value that will be pre-populated into the UI
       required: true # (Optional) Whether or not an answer is required. By default, it's considered `false`.
       type: string # How the questions are formatted and types of response expected
     - variable: GIT_BRANCH # A single word that is used to pair the question and answer.
-      label: Set git branch # The "question" to be answered.
+      label: Git branch # The "question" to be answered.
       description: |
         Project deploy branche
       # The description of the question to show the user how to answer the question.
       default: master # (Optional) A default value that will be pre-populated into the UI
+      required: true # (Optional) Whether or not an answer is required. By default, it's considered `false`.
+      type: string # How the questions are formatted and types of response expected
+    - variable: DOC_ROOT # A single word that is used to pair the question and answer.
+      label: DocRoot # The "question" to be answered.
+      description: |
+        DocRoot where id project deploy
+      # The description of the question to show the user how to answer the question.
+      default: /var/www # (Optional) A default value that will be pre-populated into the UI
       required: true # (Optional) Whether or not an answer is required. By default, it's considered `false`.
       type: string # How the questions are formatted and types of response expected
 
