@@ -1,0 +1,83 @@
+version: '2'
+services:
+  fpm:
+    image: infas/php-fpm-full:latest
+    environment:
+      SERVICE_NAME: shop
+      ENV_VER: ${ENV_VER}
+      GIT_BRANCH: ${GIT_BRANCH}
+      GIT_REPO: ${GIT_REPO}
+      GIT_SERVER: ${GIT_SERVER}
+      PROJECT_NAME: ${PROJECT_NAME}
+      VIRTUAL_ROOT: ${DOC_ROOT}/${PROJECT_NAME}/shop/www
+      WWW_ROOT: ${DOC_ROOT}/${PROJECT_NAME}
+    volumes:
+    - /mnt/sklad:/sklad
+    - /mnt/uploads:/var/www/uploads
+    - /mnt/hot:/var/www/24print_v3_hot
+    - /mnt/sklad/24print/packages:/mnt/24print_v3/.fileStorages/packages
+    - /mnt/docker-data/dep.env/sc-git-clone.sh:/usr/sbin/sc-git-clone:ro
+    - /mnt/docker-data/nginx-service/php.ini-prod:/usr/local/etc/php/php.ini
+    - /mnt/docker-data/nginx-service/24p-fpm.conf:/usr/local/etc/php-fpm.d/zz-24p-fpm.conf
+    logging:
+      driver: json-file
+      options:
+        max-file: '2'
+        max-size: 5m
+    extra_hosts:
+    - www.24print.eu:10.255.16.249
+    - shop-bridge.24print.eu:192.168.100.90
+    secrets:
+    - mode: '0444'
+      uid: '0'
+      gid: '0'
+      source: git_id_rsa
+      target: id_rsa
+    user: 0:0
+    labels:
+      io.rancher.container.dns: 'true'
+      io.rancher.container.network: 'true'
+      io.rancher.container.hostname_override: container_name
+      io.rancher.scheduler.affinity:host_label_ne: cattle=manager
+  nginx:
+    image: infas/nginx:latest
+    environment:
+      SERVICE_NAME: shop
+      ENV_VER: ${ENV_VER}
+      GIT_BRANCH: ${GIT_BRANCH}
+      GIT_REPO: ${GIT_REPO}
+      GIT_SERVER: ${GIT_SERVER}
+      PROJECT_NAME: ${PROJECT_NAME}
+      SOURCE_PATH: ${PROJECT_NAME}
+      WWW_ROOT: ${DOC_ROOT}/${PROJECT_NAME}
+    volumes:
+    - /mnt/hot:/var/www/24print_v3_hot
+    - /mnt/docker-data/certs:/.ssl/certs:ro
+    - /mnt/docker-data/nginx-service/include/:/etc/nginx/include/:ro
+    - /mnt/docker-data/dep.env/sc-git-clone.sh:/usr/sbin/sc-git-clone:ro
+    - /mnt/docker-data/nginx-service/default.conf.tmp/:/tmp/default.conf.tmp
+    logging:
+      driver: json-file
+      options:
+        max-file: '2'
+        max-size: 5m
+    extra_hosts:
+    - www.24print.eu:10.255.16.249
+    - shop-bridge.24print.eu:192.168.100.90
+    ports:
+    - 3383:443/tcp
+    secrets:
+    - mode: '0444'
+      uid: '0'
+      gid: '0'
+      source: git_id_rsa
+      target: id_rsa
+    labels:
+      io.rancher.sidekicks: fpm
+      io.rancher.container.dns: 'true'
+      io.rancher.scheduler.global: 'true'
+      io.rancher.container.network: 'true'
+      io.rancher.scheduler.affinity:host_label_ne: cattle=manager
+secrets:
+  git_id_rsa:
+    external: 'true'

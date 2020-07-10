@@ -1,0 +1,7 @@
+name: 24print
+description: |
+    Docker e-shop app
+version: 1.0.0-rancher1
+category: WebApps E-Shop
+maintainer: INFAS a.s.
+projectURL: https://www.24print.eu
