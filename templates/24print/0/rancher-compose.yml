@@ -65,7 +65,7 @@ catalog:
         How much scale Render PHP-FPM
       type: int # How the questions are formatted and types of response expected
       required: true # (Optional) Whether or not an answer is required. By default, it's considered `false`.
-      default: 6 # (Optional) A default value that will be pre-populated into the UI
+      default: "6" # (Optional) A default value that will be pre-populated into the UI
 
 services:
   fpm-shop:
