@@ -69,7 +69,7 @@ services:
       options:
         max-file: '2'
         max-size: 5m
-    network_mode: container:vxlan
+    network_mode: vxlan
     extra_hosts:
     - www.24print.eu:10.255.16.249
     - shop-bridge.24print.eu:192.168.100.90
@@ -263,7 +263,7 @@ services:
       options:
         max-file: '2'
         max-size: 5m
-    network_mode: container:vxlan
+    network_mode: vxlan
     extra_hosts:
     - www.24print.eu:10.255.16.249
     - shop-bridge.24print.eu:192.168.100.90

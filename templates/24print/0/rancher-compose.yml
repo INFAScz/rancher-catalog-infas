@@ -64,7 +64,7 @@ catalog:
       description: |
         How much scale Render PHP-FPM
       # The description of the question to show the user how to answer the question.
-      default:  6 # (Optional) A default value that will be pre-populated into the UI
+      default: $(($(curl http://169.254.169.250/latest/hosts | wc -l) * 3)) # (Optional) A default value that will be pre-populated into the UI
       required: true # (Optional) Whether or not an answer is required. By default, it's considered `false`.
       type: int # How the questions are formatted and types of response expected
 
@@ -94,7 +94,7 @@ services:
   mount-shop:
     start_on_create: true
   fpm-render:
-    scale: ${RENDER_SCALE}
+    scale: "${RENDER_SCALE}"
     start_on_create: true
     health_check:
       response_timeout: 2000
