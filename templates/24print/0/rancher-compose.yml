@@ -59,10 +59,17 @@ catalog:
       default: /var/www # (Optional) A default value that will be pre-populated into the UI
       required: true # (Optional) Whether or not an answer is required. By default, it's considered `false`.
       type: string # How the questions are formatted and types of response expected
+    - variable: RENDER_SCALE # A single word that is used to pair the question and answer.
+      label: Scale of Render # The "question" to be answered.
+      description: |
+        How much scale Render PHP-FPM
+      # The description of the question to show the user how to answer the question.
+      default:  6 # (Optional) A default value that will be pre-populated into the UI
+      required: true # (Optional) Whether or not an answer is required. By default, it's considered `false`.
+      type: int # How the questions are formatted and types of response expected
 
 services:
-  fpm:
-    scale: 1
+  fpm-shop:
     start_on_create: true
     health_check:
       response_timeout: 2000
@@ -73,7 +80,7 @@ services:
       interval: 2000
       strategy: recreate
       reinitializing_timeout: 60000
-  nginx:
+  shop:
     start_on_create: true
     health_check:
       response_timeout: 2000
@@ -84,3 +91,49 @@ services:
       interval: 2000
       strategy: recreate
       reinitializing_timeout: 60000
+  fpm-render:
+    scale: ${RENDER_SCALE}
+    start_on_create: true
+    health_check:
+      response_timeout: 2000
+      healthy_threshold: 2
+      port: 9000
+      unhealthy_threshold: 3
+      initializing_timeout: 60000
+      interval: 2000
+      strategy: recreate
+      reinitializing_timeout: 60000
+  render:
+    start_on_create: true
+    health_check:
+      response_timeout: 2000
+      healthy_threshold: 2
+      port: 80
+      unhealthy_threshold: 3
+      initializing_timeout: 60000
+      interval: 2000
+      strategy: recreate
+      reinitializing_timeout: 60000
+  fpm-static:
+    start_on_create: true
+    health_check:
+      response_timeout: 2000
+      healthy_threshold: 2
+      port: 9000
+      unhealthy_threshold: 3
+      initializing_timeout: 60000
+      interval: 2000
+      strategy: recreate
+      reinitializing_timeout: 60000
+  static:
+    start_on_create: true
+    health_check:
+      response_timeout: 2000
+      healthy_threshold: 2
+      port: 80
+      unhealthy_threshold: 3
+      initializing_timeout: 60000
+      interval: 2000
+      strategy: recreate
+      reinitializing_timeout: 60000
+
