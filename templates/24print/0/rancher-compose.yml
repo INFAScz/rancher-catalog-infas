@@ -16,9 +16,9 @@ catalog:
     - variable: ENV_VER # A single word that is used to pair the question and answer.
       label: Deploy as # The "question" to be answered.
       description: |
-        Project deploy version (public/stable/develop)
+        Project deploy version (public/preview/develop)
       # The description of the question to show the user how to answer the question.
-      default: public # (Optional) A default value that will be pre-populated into the UI
+      default: preview # (Optional) A default value that will be pre-populated into the UI
       required: true # (Optional) Whether or not an answer is required. By default, it's considered `false`.
       type: enum # How the questions are formatted and types of response expected
       options:
@@ -40,15 +40,15 @@ catalog:
       description: |
         Repository
       # The description of the question to show the user how to answer the question.
-      default: infas/24print_v3 # (Optional) A default value that will be pre-populated into the UI
+      default: infascz/24print_v3 # (Optional) A default value that will be pre-populated into the UI
       required: true # (Optional) Whether or not an answer is required. By default, it's considered `false`.
       type: string # How the questions are formatted and types of response expected
     - variable: GIT_BRANCH # A single word that is used to pair the question and answer.
       label: Git branch # The "question" to be answered.
       description: |
-        Project deploy branche
+        Project deploy branche (masterm preview/stable, develop/*)
       # The description of the question to show the user how to answer the question.
-      default: master # (Optional) A default value that will be pre-populated into the UI
+      default: preview/stable # (Optional) A default value that will be pre-populated into the UI
       required: true # (Optional) Whether or not an answer is required. By default, it's considered `false`.
       type: string # How the questions are formatted and types of response expected
     - variable: DOC_ROOT # A single word that is used to pair the question and answer.
@@ -91,6 +91,8 @@ services:
       interval: 2000
       strategy: recreate
       reinitializing_timeout: 60000
+  mount-shop:
+    start_on_create: true
   fpm-render:
     scale: ${RENDER_SCALE}
     start_on_create: true
@@ -103,6 +105,8 @@ services:
       interval: 2000
       strategy: recreate
       reinitializing_timeout: 60000
+  mount-render:
+    start_on_create: true
   render:
     start_on_create: true
     health_check:
@@ -136,6 +140,6 @@ services:
       interval: 2000
       strategy: recreate
       reinitializing_timeout: 60000
-  mount:
+  mount-static:
     start_on_create: true
-    
+

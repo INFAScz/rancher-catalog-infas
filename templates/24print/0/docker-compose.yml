@@ -27,6 +27,9 @@ services:
     extra_hosts:
     - www.24print.eu:10.255.16.249
     - shop-bridge.24print.eu:192.168.100.90
+    dns:
+    - 192.168.100.150
+    - 1.1.1.1
     ports:
     - 3383:443/tcp
     - 3380:80/tcp
@@ -295,7 +298,7 @@ secrets:
 
 volumes:
   var_www:
+    external: true
     driver: local
     driver_opts:
       type: tmpfs
-    external: true
