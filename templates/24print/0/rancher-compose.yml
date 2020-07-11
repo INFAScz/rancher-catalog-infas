@@ -136,4 +136,6 @@ services:
       interval: 2000
       strategy: recreate
       reinitializing_timeout: 60000
-
+  mount:
+    start_on_create: true
+    

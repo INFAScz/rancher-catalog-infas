@@ -16,6 +16,8 @@ services:
     - /mnt/docker-data/nginx-service/php.ini-prod:/usr/local/etc/php/php.ini
     - /mnt/docker-data/nginx-service/24p-fpm.conf:/usr/local/etc/php-fpm.d/zz-24p-fpm.conf
     - /mnt/docker-data/dep.env/sc-git-clone.sh:/usr/sbin/sc-git-clone:ro
+    links:
+    - mount
     volumes_from:
     - mount
     logging:
@@ -54,6 +56,8 @@ services:
     - /mnt/docker-data/certs:/.ssl/certs:ro
     - /mnt/docker-data/nginx-service/include/:/etc/nginx/include/:ro
     - /mnt/docker-data/nginx-service/default.conf.tmp/:/tmp/default.conf.tmp
+    links:
+    - mount
     volumes_from:
     - mount
     logging:
@@ -98,6 +102,8 @@ services:
     - /mnt/docker-data/nginx-service/php.ini-prod:/usr/local/etc/php/php.ini
     - /mnt/docker-data/nginx-service/24p-fpm.conf:/usr/local/etc/php-fpm.d/zz-24p-fpm.conf
     - /mnt/docker-data/dep.env/sc-git-clone.sh:/usr/sbin/sc-git-clone:ro
+    links:
+    - mount
     volumes_from:
     - mount
     logging:
@@ -137,6 +143,8 @@ services:
     - /mnt/docker-data/certs:/.ssl/certs:ro
     - /mnt/docker-data/nginx-service/include/:/etc/nginx/include/:ro
     - /mnt/docker-data/nginx-service/default.conf.tmp/:/tmp/default.conf.tmp
+    links:
+    - mount
     volumes_from:
     - mount
     links:
@@ -181,6 +189,8 @@ services:
     - /mnt/docker-data/nginx-service/php.ini-prod:/usr/local/etc/php/php.ini
     - /mnt/docker-data/nginx-service/24p-fpm.conf:/usr/local/etc/php-fpm.d/zz-24p-fpm.conf
     - /mnt/docker-data/dep.env/sc-git-clone.sh:/usr/sbin/sc-git-clone:ro
+    links:
+    - mount
     volumes_from:
     - mount
     logging:
@@ -220,7 +230,7 @@ services:
     - /mnt/docker-data/nginx-service/include/:/etc/nginx/include/:ro
     - /mnt/docker-data/nginx-service/default.conf.tmp/:/tmp/default.conf.tmp
     volumes_from:
-    - mount
+    - mount.${stack_name}
     logging:
       driver: json-file
       options:
@@ -251,6 +261,7 @@ services:
     pid: host
     labels:
       io.rancher.scheduler.global: 'true'
+      io.rancher.container.start_once: 'true'
     volumes:
     # All
     - /mnt/sklad:/sklad
