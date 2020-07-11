@@ -4,11 +4,6 @@ services:
     image: infas/nginx:latest
     environment:
       SERVICE_NAME: shop
-      ENV_VER: ${ENV_VER}
-      GIT_BRANCH: ${GIT_BRANCH}
-      GIT_REPO: ${GIT_REPO}
-      GIT_SERVER: ${GIT_SERVER}
-      PROJECT_NAME: ${PROJECT_NAME}
       SOURCE_PATH: ${PROJECT_NAME}
       WWW_ROOT: ${DOC_ROOT}/${PROJECT_NAME}
     volumes:
@@ -51,11 +46,6 @@ services:
     image: infas/php-fpm-full:latest
     environment:
       SERVICE_NAME: shop
-      ENV_VER: ${ENV_VER}
-      GIT_BRANCH: ${GIT_BRANCH}
-      GIT_REPO: ${GIT_REPO}
-      GIT_SERVER: ${GIT_SERVER}
-      PROJECT_NAME: ${PROJECT_NAME}
       VIRTUAL_ROOT: ${DOC_ROOT}/${PROJECT_NAME}/shop/www
       WWW_ROOT: ${DOC_ROOT}/${PROJECT_NAME}
     volumes:
@@ -74,6 +64,9 @@ services:
     extra_hosts:
     - www.24print.eu:10.255.16.249
     - shop-bridge.24print.eu:192.168.100.90
+    dns:
+    - 192.168.100.150
+    - 1.1.1.1
     secrets:
     - mode: '0444'
       uid: '0'
@@ -103,11 +96,6 @@ services:
     image: infas/nginx:latest
     environment:
       SERVICE_NAME: static
-      ENV_VER: ${ENV_VER}
-      GIT_BRANCH: ${GIT_BRANCH}
-      GIT_REPO: ${GIT_REPO}
-      GIT_SERVER: ${GIT_SERVER}
-      PROJECT_NAME: ${PROJECT_NAME}
       SOURCE_PATH: ${PROJECT_NAME}
       WWW_ROOT: ${DOC_ROOT}/${PROJECT_NAME}
     volumes:
@@ -126,6 +114,9 @@ services:
     extra_hosts:
     - www.24print.eu:10.255.16.249
     - shop-bridge.24print.eu:192.168.100.90
+    dns:
+    - 192.168.100.150
+    - 1.1.1.1
     ports:
     - 3385:443/tcp
     - 3382:80/tcp
@@ -148,11 +139,6 @@ services:
     image: infas/php-fpm-full:latest
     environment:
       SERVICE_NAME: static
-      ENV_VER: ${ENV_VER}
-      GIT_BRANCH: ${GIT_BRANCH}
-      GIT_REPO: ${GIT_REPO}
-      GIT_SERVER: ${GIT_SERVER}
-      PROJECT_NAME: ${PROJECT_NAME}
       VIRTUAL_ROOT: ${DOC_ROOT}/${PROJECT_NAME}/static/www
       WWW_ROOT: ${DOC_ROOT}/${PROJECT_NAME}
     volumes:
@@ -202,12 +188,6 @@ services:
     image: infas/nginx:latest
     environment:
       THIS: ${service_name}
-      SERVICE_NAME: render
-      ENV_VER: ${ENV_VER}
-      GIT_BRANCH: ${GIT_BRANCH}
-      GIT_REPO: ${GIT_REPO}
-      GIT_SERVER: ${GIT_SERVER}
-      PROJECT_NAME: ${PROJECT_NAME}
       SOURCE_PATH: ${PROJECT_NAME}
       WWW_ROOT: ${DOC_ROOT}/${PROJECT_NAME}
     volumes:
@@ -238,7 +218,9 @@ services:
     - 3381:80/tcp
     labels:
       io.rancher.os.after: fpm-render
+      io.rancher.os.before: static,shop
       io.rancher.container.dns: 'true'
+      io.rancher.scheduler.global: 'true'
       io.rancher.container.network: 'true'
       io.rancher.lb_service.target: prefer-local
       io.rancher.container.hostname_override: container_name
@@ -248,11 +230,6 @@ services:
     image: infas/php-fpm-full:latest
     environment:
       SERVICE_NAME: render
-      ENV_VER: ${ENV_VER}
-      GIT_BRANCH: ${GIT_BRANCH}
-      GIT_REPO: ${GIT_REPO}
-      GIT_SERVER: ${GIT_SERVER}
-      PROJECT_NAME: ${PROJECT_NAME}
       VIRTUAL_ROOT: ${DOC_ROOT}/${PROJECT_NAME}/render/www
       WWW_ROOT: ${DOC_ROOT}/${PROJECT_NAME}
     volumes:

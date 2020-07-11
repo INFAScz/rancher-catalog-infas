@@ -65,20 +65,9 @@ catalog:
         How much scale Render PHP-FPM
       type: int # How the questions are formatted and types of response expected
       required: true # (Optional) Whether or not an answer is required. By default, it's considered `false`.
-      default: "6" # (Optional) A default value that will be pre-populated into the UI
+      default: "12" # (Optional) A default value that will be pre-populated into the UI
 
 services:
-  fpm-shop:
-    start_on_create: true
-    health_check:
-      response_timeout: 2000
-      healthy_threshold: 2
-      port: 9000
-      unhealthy_threshold: 3
-      initializing_timeout: 60000
-      interval: 2000
-      strategy: recreate
-      reinitializing_timeout: 60000
   shop:
     start_on_create: true
     health_check:
@@ -90,10 +79,7 @@ services:
       interval: 2000
       strategy: recreate
       reinitializing_timeout: 60000
-  mount-shop:
-    start_on_create: true
-  fpm-render:
-    scale: "${RENDER_SCALE}"
+  fpm-shop:
     start_on_create: true
     health_check:
       response_timeout: 2000
@@ -104,9 +90,9 @@ services:
       interval: 2000
       strategy: recreate
       reinitializing_timeout: 60000
-  mount-render:
+  mount-shop:
     start_on_create: true
-  render:
+  static:
     start_on_create: true
     health_check:
       response_timeout: 2000
@@ -128,7 +114,9 @@ services:
       interval: 2000
       strategy: recreate
       reinitializing_timeout: 60000
-  static:
+  mount-static:
+    start_on_create: true
+  render:
     start_on_create: true
     health_check:
       response_timeout: 2000
@@ -139,6 +127,19 @@ services:
       interval: 2000
       strategy: recreate
       reinitializing_timeout: 60000
-  mount-static:
+  fpm-render:
+    scale: "${RENDER_SCALE}"
     start_on_create: true
-
+    health_check:
+      response_timeout: 2000
+      healthy_threshold: 2
+      port: 9000
+      unhealthy_threshold: 3
+      initializing_timeout: 60000
+      interval: 2000
+      strategy: recreate
+      reinitializing_timeout: 60000
+  mount-render:
+    start_on_create: true
+    labels:
+      test.host: $${hostname}
