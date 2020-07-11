@@ -1,45 +1,5 @@
 version: '2'
 services:
-  fpm-shop:
-    image: infas/php-fpm-full:latest
-    environment:
-      SERVICE_NAME: shop
-      ENV_VER: ${ENV_VER}
-      GIT_BRANCH: ${GIT_BRANCH}
-      GIT_REPO: ${GIT_REPO}
-      GIT_SERVER: ${GIT_SERVER}
-      PROJECT_NAME: ${PROJECT_NAME}
-      VIRTUAL_ROOT: ${DOC_ROOT}/${PROJECT_NAME}/shop/www
-      WWW_ROOT: ${DOC_ROOT}/${PROJECT_NAME}
-    volumes:
-    # PHP-FPM
-    - /mnt/docker-data/nginx-service/php.ini-prod:/usr/local/etc/php/php.ini
-    - /mnt/docker-data/nginx-service/24p-fpm.conf:/usr/local/etc/php-fpm.d/zz-24p-fpm.conf
-    - /mnt/docker-data/dep.env/sc-git-clone.sh:/usr/sbin/sc-git-clone:ro
-    links:
-    - mount
-    volumes_from:
-    - mount
-    logging:
-      driver: json-file
-      options:
-        max-file: '2'
-        max-size: 5m
-    extra_hosts:
-    - www.24print.eu:10.255.16.249
-    - shop-bridge.24print.eu:192.168.100.90
-    secrets:
-    - mode: '0444'
-      uid: '0'
-      gid: '0'
-      source: git_id_rsa
-      target: id_rsa
-    user: 0:0
-    labels:
-      io.rancher.container.dns: 'true'
-      io.rancher.container.network: 'true'
-      io.rancher.container.hostname_override: container_name
-      io.rancher.scheduler.affinity:host_label_ne: cattle=manager
   shop:
     image: infas/nginx:latest
     environment:
@@ -56,15 +16,14 @@ services:
     - /mnt/docker-data/certs:/.ssl/certs:ro
     - /mnt/docker-data/nginx-service/include/:/etc/nginx/include/:ro
     - /mnt/docker-data/nginx-service/default.conf.tmp/:/tmp/default.conf.tmp
-    links:
-    - mount
     volumes_from:
-    - mount
+    - mount-shop
     logging:
       driver: json-file
       options:
         max-file: '2'
         max-size: 5m
+    network_mode: vxlan
     extra_hosts:
     - www.24print.eu:10.255.16.249
     - shop-bridge.24print.eu:192.168.100.90
@@ -78,39 +37,36 @@ services:
       source: git_id_rsa
       target: id_rsa
     labels:
-      io.rancher.sidekicks: fpm-shop
+      io.rancher.sidekicks: fpm-shop,mount-shop
       io.rancher.container.dns: 'true'
       io.rancher.scheduler.global: 'true'
       io.rancher.container.network: 'true'
       io.rancher.container.hostname_override: container_name
       io.rancher.scheduler.affinity:host_label_ne: cattle=manager
-
-# Render
-  fpm-render:
+  fpm-shop:
     image: infas/php-fpm-full:latest
     environment:
-      SERVICE_NAME: render
+      SERVICE_NAME: shop
       ENV_VER: ${ENV_VER}
       GIT_BRANCH: ${GIT_BRANCH}
       GIT_REPO: ${GIT_REPO}
       GIT_SERVER: ${GIT_SERVER}
       PROJECT_NAME: ${PROJECT_NAME}
-      VIRTUAL_ROOT: ${DOC_ROOT}/${PROJECT_NAME}/render/www
+      VIRTUAL_ROOT: ${DOC_ROOT}/${PROJECT_NAME}/shop/www
       WWW_ROOT: ${DOC_ROOT}/${PROJECT_NAME}
     volumes:
     # PHP-FPM
+    - /mnt/docker-data/dep.env/sc-git-clone.sh:/usr/sbin/sc-git-clone:ro
     - /mnt/docker-data/nginx-service/php.ini-prod:/usr/local/etc/php/php.ini
     - /mnt/docker-data/nginx-service/24p-fpm.conf:/usr/local/etc/php-fpm.d/zz-24p-fpm.conf
-    - /mnt/docker-data/dep.env/sc-git-clone.sh:/usr/sbin/sc-git-clone:ro
-    links:
-    - mount
     volumes_from:
-    - mount
+    - mount-shop
     logging:
       driver: json-file
       options:
         max-file: '2'
         max-size: 5m
+    network_mode: container:vxlan
     extra_hosts:
     - www.24print.eu:10.255.16.249
     - shop-bridge.24print.eu:192.168.100.90
@@ -126,6 +82,21 @@ services:
       io.rancher.container.network: 'true'
       io.rancher.container.hostname_override: container_name
       io.rancher.scheduler.affinity:host_label_ne: cattle=manager
+  mount-shop:
+    image: busybox
+    privileged: true
+    network_mode: none
+    labels:
+      io.rancher.container.start_once: 'true'
+    volumes:
+    - /mnt/sklad:/sklad
+    - /mnt/uploads:/var/www/uploads
+    - var_www:/var/www/${PROJECT_NAME}
+    - /mnt/hot:/var/www/${PROJECT_NAME}_hot
+    - /mnt/sklad/24print/packages:/mnt/${PROJECT_NAME}/.fileStorages/packages
+
+# Render
+  # Nginx
   render:
     image: infas/nginx:latest
     environment:
@@ -139,14 +110,11 @@ services:
       SOURCE_PATH: ${PROJECT_NAME}
       WWW_ROOT: ${DOC_ROOT}/${PROJECT_NAME}
     volumes:
-    # Nginx
+    - var_www:/var/www/${PROJECT_NAME}
+    - /mnt/hot:/var/www/${PROJECT_NAME}_hot
     - /mnt/docker-data/certs:/.ssl/certs:ro
     - /mnt/docker-data/nginx-service/include/:/etc/nginx/include/:ro
     - /mnt/docker-data/nginx-service/default.conf.tmp/:/tmp/default.conf.tmp
-    links:
-    - mount
-    volumes_from:
-    - mount
     links:
     - fpm-render
     logging:
@@ -154,6 +122,7 @@ services:
       options:
         max-file: '2'
         max-size: 5m
+    network_mode: vxlan
     extra_hosts:
     - www.24print.eu:10.255.16.249
     - shop-bridge.24print.eu:192.168.100.90
@@ -172,32 +141,30 @@ services:
       io.rancher.lb_service.target: prefer-local
       io.rancher.container.hostname_override: container_name
       io.rancher.scheduler.affinity:host_label_ne: cattle=manager
-
-  fpm-static:
+  # PHP-FPM
+  fpm-render:
     image: infas/php-fpm-full:latest
     environment:
-      SERVICE_NAME: static
+      SERVICE_NAME: render
       ENV_VER: ${ENV_VER}
       GIT_BRANCH: ${GIT_BRANCH}
       GIT_REPO: ${GIT_REPO}
       GIT_SERVER: ${GIT_SERVER}
       PROJECT_NAME: ${PROJECT_NAME}
-      VIRTUAL_ROOT: ${DOC_ROOT}/${PROJECT_NAME}/static/www
+      VIRTUAL_ROOT: ${DOC_ROOT}/${PROJECT_NAME}/render/www
       WWW_ROOT: ${DOC_ROOT}/${PROJECT_NAME}
     volumes:
-    # PHP-FPM
+    - /mnt/docker-data/dep.env/sc-git-clone.sh:/usr/sbin/sc-git-clone:ro
     - /mnt/docker-data/nginx-service/php.ini-prod:/usr/local/etc/php/php.ini
     - /mnt/docker-data/nginx-service/24p-fpm.conf:/usr/local/etc/php-fpm.d/zz-24p-fpm.conf
-    - /mnt/docker-data/dep.env/sc-git-clone.sh:/usr/sbin/sc-git-clone:ro
-    links:
-    - mount
     volumes_from:
-    - mount
+    - mount-render
     logging:
       driver: json-file
       options:
         max-file: '2'
         max-size: 5m
+    network_mode: vxlan
     extra_hosts:
     - www.24print.eu:10.255.16.249
     - shop-bridge.24print.eu:192.168.100.90
@@ -209,10 +176,24 @@ services:
       target: id_rsa
     user: 0:0
     labels:
+      io.rancher.sidekicks: mount-render
       io.rancher.container.dns: 'true'
       io.rancher.container.network: 'true'
       io.rancher.container.hostname_override: container_name
       io.rancher.scheduler.affinity:host_label_ne: cattle=manager
+  mount-render:
+    image: busybox
+    privileged: true
+    network_mode: none
+    labels:
+      io.rancher.container.start_once: 'true'
+    volumes:
+    - /mnt/sklad:/sklad
+    - /mnt/uploads:/var/www/uploads
+    - var_www:/var/www/${PROJECT_NAME}
+    - /mnt/hot:/var/www/${PROJECT_NAME}_hot
+    - /mnt/sklad/24print/packages:/mnt/${PROJECT_NAME}/.fileStorages/packages
+
   static:
     image: infas/nginx:latest
     environment:
@@ -230,12 +211,13 @@ services:
     - /mnt/docker-data/nginx-service/include/:/etc/nginx/include/:ro
     - /mnt/docker-data/nginx-service/default.conf.tmp/:/tmp/default.conf.tmp
     volumes_from:
-    - mount.${stack_name}
+    - mount-static
     logging:
       driver: json-file
       options:
         max-file: '2'
         max-size: 5m
+    network_mode: vxlan
     extra_hosts:
     - www.24print.eu:10.255.16.249
     - shop-bridge.24print.eu:192.168.100.90
@@ -249,25 +231,71 @@ services:
       source: git_id_rsa
       target: id_rsa
     labels:
-      io.rancher.sidekicks: fpm-static
+      io.rancher.sidekicks: fpm-static,mount-static
       io.rancher.container.dns: 'true'
       io.rancher.scheduler.global: 'true'
       io.rancher.container.network: 'true'
       io.rancher.container.hostname_override: container_name
       io.rancher.scheduler.affinity:host_label_ne: cattle=manager
-  mount:
+  fpm-static:
+    image: infas/php-fpm-full:latest
+    environment:
+      SERVICE_NAME: static
+      ENV_VER: ${ENV_VER}
+      GIT_BRANCH: ${GIT_BRANCH}
+      GIT_REPO: ${GIT_REPO}
+      GIT_SERVER: ${GIT_SERVER}
+      PROJECT_NAME: ${PROJECT_NAME}
+      VIRTUAL_ROOT: ${DOC_ROOT}/${PROJECT_NAME}/static/www
+      WWW_ROOT: ${DOC_ROOT}/${PROJECT_NAME}
+    volumes:
+    # PHP-FPM
+    - /mnt/docker-data/dep.env/sc-git-clone.sh:/usr/sbin/sc-git-clone:ro
+    - /mnt/docker-data/nginx-service/php.ini-prod:/usr/local/etc/php/php.ini
+    - /mnt/docker-data/nginx-service/24p-fpm.conf:/usr/local/etc/php-fpm.d/zz-24p-fpm.conf
+    volumes_from:
+    - mount-static
+    logging:
+      driver: json-file
+      options:
+        max-file: '2'
+        max-size: 5m
+    network_mode: container:vxlan
+    extra_hosts:
+    - www.24print.eu:10.255.16.249
+    - shop-bridge.24print.eu:192.168.100.90
+    secrets:
+    - mode: '0444'
+      uid: '0'
+      gid: '0'
+      source: git_id_rsa
+      target: id_rsa
+    user: 0:0
+    labels:
+      io.rancher.container.dns: 'true'
+      io.rancher.container.network: 'true'
+      io.rancher.container.hostname_override: container_name
+      io.rancher.scheduler.affinity:host_label_ne: cattle=manager
+  mount-static:
     image: busybox
     privileged: true
+    network_mode: none
     labels:
-      io.rancher.scheduler.global: 'true'
       io.rancher.container.start_once: 'true'
     volumes:
-    # All
     - /mnt/sklad:/sklad
-    - /var/www/${PROJECT_NAME}
     - /mnt/uploads:/var/www/uploads
+    - var_www:/var/www/${PROJECT_NAME}
     - /mnt/hot:/var/www/${PROJECT_NAME}_hot
     - /mnt/sklad/24print/packages:/mnt/${PROJECT_NAME}/.fileStorages/packages
+
 secrets:
   git_id_rsa:
-    external: 'true'
+    external: true
+
+volumes:
+  var_www:
+    driver: local
+    driver_opts:
+      type: tmpfs
+    external: true
