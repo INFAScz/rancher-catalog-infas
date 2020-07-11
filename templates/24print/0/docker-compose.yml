@@ -4,6 +4,11 @@ services:
     image: infas/nginx:latest
     environment:
       SERVICE_NAME: shop
+      ENV_VER: ${ENV_VER}
+      GIT_BRANCH: ${GIT_BRANCH}
+      GIT_REPO: ${GIT_REPO}
+      GIT_SERVER: ${GIT_SERVER}
+      PROJECT_NAME: ${PROJECT_NAME}
       SOURCE_PATH: ${PROJECT_NAME}
       WWW_ROOT: ${DOC_ROOT}/${PROJECT_NAME}
     volumes:
@@ -46,6 +51,11 @@ services:
     image: infas/php-fpm-full:latest
     environment:
       SERVICE_NAME: shop
+      ENV_VER: ${ENV_VER}
+      GIT_BRANCH: ${GIT_BRANCH}
+      GIT_REPO: ${GIT_REPO}
+      GIT_SERVER: ${GIT_SERVER}
+      PROJECT_NAME: ${PROJECT_NAME}
       VIRTUAL_ROOT: ${DOC_ROOT}/${PROJECT_NAME}/shop/www
       WWW_ROOT: ${DOC_ROOT}/${PROJECT_NAME}
     volumes:
@@ -96,6 +106,11 @@ services:
     image: infas/nginx:latest
     environment:
       SERVICE_NAME: static
+      ENV_VER: ${ENV_VER}
+      GIT_BRANCH: ${GIT_BRANCH}
+      GIT_REPO: ${GIT_REPO}
+      GIT_SERVER: ${GIT_SERVER}
+      PROJECT_NAME: ${PROJECT_NAME}
       SOURCE_PATH: ${PROJECT_NAME}
       WWW_ROOT: ${DOC_ROOT}/${PROJECT_NAME}
     volumes:
@@ -139,6 +154,11 @@ services:
     image: infas/php-fpm-full:latest
     environment:
       SERVICE_NAME: static
+      ENV_VER: ${ENV_VER}
+      GIT_BRANCH: ${GIT_BRANCH}
+      GIT_REPO: ${GIT_REPO}
+      GIT_SERVER: ${GIT_SERVER}
+      PROJECT_NAME: ${PROJECT_NAME}
       VIRTUAL_ROOT: ${DOC_ROOT}/${PROJECT_NAME}/static/www
       WWW_ROOT: ${DOC_ROOT}/${PROJECT_NAME}
     volumes:
@@ -188,6 +208,12 @@ services:
     image: infas/nginx:latest
     environment:
       THIS: ${service_name}
+      SERVICE_NAME: render
+      ENV_VER: ${ENV_VER}
+      GIT_BRANCH: ${GIT_BRANCH}
+      GIT_REPO: ${GIT_REPO}
+      GIT_SERVER: ${GIT_SERVER}
+      PROJECT_NAME: ${PROJECT_NAME}
       SOURCE_PATH: ${PROJECT_NAME}
       WWW_ROOT: ${DOC_ROOT}/${PROJECT_NAME}
     volumes:
@@ -230,6 +256,11 @@ services:
     image: infas/php-fpm-full:latest
     environment:
       SERVICE_NAME: render
+      ENV_VER: ${ENV_VER}
+      GIT_BRANCH: ${GIT_BRANCH}
+      GIT_REPO: ${GIT_REPO}
+      GIT_SERVER: ${GIT_SERVER}
+      PROJECT_NAME: ${PROJECT_NAME}
       VIRTUAL_ROOT: ${DOC_ROOT}/${PROJECT_NAME}/render/www
       WWW_ROOT: ${DOC_ROOT}/${PROJECT_NAME}
     volumes:
