@@ -1,0 +1,108 @@
+version: '2'
+catalog:
+  name: SwarmPit v3
+  version: 1.9.0
+  description: |
+    SwarmPit template for RancherOs
+  questions: #Used to request user input for configuration optionsservices:
+  app:
+    retain_ip: true
+    start_on_create: true
+    health_check:
+      healthy_threshold: 2
+      response_timeout: 2000
+      port: 8080
+      unhealthy_threshold: 3
+      initializing_timeout: 45000
+      interval: 2000
+      strategy: recreate
+      request_line: GET "/" "HTTP/1.0"
+      reinitializing_timeout: 60000
+  agent:
+    start_on_create: true
+  static:
+    external_ips:
+    - 10.0.7.1
+    start_on_create: true
+    health_check:
+      response_timeout: 2000
+      healthy_threshold: 2
+      port: 3385
+      unhealthy_threshold: 3
+      initializing_timeout: 60000
+      interval: 2000
+      strategy: recreate
+      request_line: GET "/verze.php" "HTTP/1.0"
+      reinitializing_timeout: 60000
+  shop:
+    external_ips:
+    - 10.0.8.1
+    start_on_create: true
+    health_check:
+      response_timeout: 2000
+      healthy_threshold: 2
+      port: 3383
+      unhealthy_threshold: 3
+      initializing_timeout: 60000
+      interval: 2000
+      strategy: recreate
+      reinitializing_timeout: 60000
+  pub-lb:
+    scale: 1
+    start_on_create: true
+    lb_config:
+      certs: []
+      default_cert: '*.24print.net'
+      port_rules:
+      - hostname: ''
+        priority: 1
+        protocol: https
+        service: shop
+        source_port: 3383
+        target_port: 3383
+      - path: ''
+        priority: 2
+        protocol: https
+        service: render
+        source_port: 3384
+        target_port: 3384
+      - priority: 3
+        protocol: https
+        service: static
+        source_port: 3385
+        target_port: 3385
+      - backend_name: pub_render_nginx
+        hostname: docker1.24print.net
+        priority: 4
+        protocol: https
+        selector: com.docker.swarm.service.name=pub_render_nginx
+        source_port: 3380
+        target_port: 80
+    health_check:
+      healthy_threshold: 2
+      response_timeout: 2000
+      port: 42
+      unhealthy_threshold: 3
+      initializing_timeout: 60000
+      interval: 2000
+      reinitializing_timeout: 60000
+  influxdb:
+    scale: 1
+    start_on_create: true
+  render:
+    external_ips:
+    - 10.0.6.1
+    start_on_create: true
+    health_check:
+      response_timeout: 2000
+      healthy_threshold: 2
+      port: 3384
+      unhealthy_threshold: 3
+      initializing_timeout: 60000
+      interval: 2000
+      strategy: recreate
+      request_line: GET "/" "HTTP/1.0"
+      reinitializing_timeout: 60000
+  db:
+    scale: 1
+    start_on_create: true

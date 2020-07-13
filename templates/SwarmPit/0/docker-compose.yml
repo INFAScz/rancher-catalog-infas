@@ -1,0 +1,76 @@
+version: '2'
+volumes:
+  db-data:
+    driver: local
+  influx-data:
+    driver: local
+services:
+  app:
+    privileged: true
+    image: swarmpit/swarmpit:latest
+    environment:
+      SWARMPIT_DB: http://db:5984
+      SWARMPIT_INFLUXDB: http://influxdb:8086
+      SWARMPIT_DOCKER_API: '1.40'
+      DOCKER_VERSION: 19.03.11
+      SWARMPIT_WORK_DIR: /tmp
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock:ro
+    - /mnt/docker-data/dep.env/:/tmp/dep.env/:ro,rshared
+    - /:/host
+    dns:
+    - 192.168.100.150
+    domainname: 24print.net
+    logging:
+      driver: json-file
+      options:
+        max-file: '2'
+        max-size: 25m
+    ports:
+    - 10.255.16.252:8888:8080/tcp
+    labels:
+      io.rancher.scheduler.affinity:host_label: swarm=manager,cattle=manager
+      io.rancher.container.hostname_override: container_name
+      io.rancher.container.pull_image: always
+      io.rancher.scheduler.global: 'true'
+      io.rancher.container.requested_ip: 10.42.100.1
+  agent:
+    image: swarmpit/agent:latest
+    environment:
+      DOCKER_API_VERSION: '1.40'
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock:ro
+    logging:
+      driver: json-file
+      options:
+        max-file: '2'
+        max-size: 25m
+    labels:
+      swarmpit.agent: 'true'
+      io.rancher.scheduler.global: 'true'
+  static:
+    image: rancher/external-service
+  shop:
+    image: rancher/external-service
+  pub-lb:
+    image: rancher/lb-service-haproxy:v0.9.14
+    ports:
+    - 3383:3383/tcp
+    - 3384:3384/tcp
+    - 3385:3385/tcp
+    - 3380:3380/tcp
+    labels:
+      io.rancher.scheduler.affinity:host_label: cattle=manager
+      io.rancher.container.agent.role: environmentAdmin,agent
+      io.rancher.container.agent_service.drain_provider: 'true'
+      io.rancher.container.create_agent: 'true'
+  influxdb:
+    image: influxdb:1.7
+    volumes:
+    - influx-data:/var/lib/influxdb
+  render:
+    image: rancher/external-service
+  db:
+    image: couchdb:2.3.0
+    volumes:
+    - db-data:/opt/couchdb/data

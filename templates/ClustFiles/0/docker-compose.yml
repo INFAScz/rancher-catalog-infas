@@ -1,0 +1,17 @@
+version: '2'
+
+services:
+  clustfiles:
+    container_name: clustfiles
+    image: lukasplevac/clustfiles
+    ports:
+      - "4000:80/tcp"
+    volumes:
+       - 'clustfiles:/data/'
+
+    restart: unless-stopped
+
+volumes:
+  clustfiles:
+    driver: glusterfs
+    externaů: true

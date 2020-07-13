@@ -1,0 +1,7 @@
+name: SwarmPit
+description: |
+    Docker SwarmPit Manager
+version: 1.9.0-rancher1
+category: WebApps 
+maintainer: swarmpit.io - team@swarmpit.io
+projectURL: https://swarmpit.io/
